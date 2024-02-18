@@ -285,7 +285,7 @@ class _MyHomePageState extends State<MyHomePage> {
 class TodoItem {
   final String title;
   final bool isDone;
-  final DateTime userDateTime; // User-specified time and date
+  final DateTime userDateTime; 
 
   TodoItem({
     required this.title,
