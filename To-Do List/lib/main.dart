@@ -106,8 +106,12 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title, required this.name, required this.mailId})
-      : super(key: key);
+  const MyHomePage({
+    Key? key,
+    required this.title,
+    required this.name,
+    required this.mailId,
+  }) : super(key: key);
 
   final String title;
   final String name;
@@ -121,16 +125,41 @@ class _MyHomePageState extends State<MyHomePage> {
   List<TodoItem> todos = [];
   TextEditingController _todoController = TextEditingController();
 
-  void _addTodo() {
+  void _addTodo() async {
     if (_todoController.text.isNotEmpty) {
-      setState(() {
-        todos.add(TodoItem(
-          title: _todoController.text,
-          isDone: false,
-          timestamp: DateTime.now(),
-        ));
-        _todoController.clear();
-      });
+      DateTime? pickedDateTime = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2101),
+      );
+
+      if (pickedDateTime != null) {
+        TimeOfDay? pickedTime = await showTimePicker(
+          context: context,
+          initialTime: TimeOfDay.now(),
+        );
+
+        if (pickedTime != null) {
+          DateTime userDateTime = DateTime(
+            pickedDateTime.year,
+            pickedDateTime.month,
+            pickedDateTime.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+
+          setState(() {
+            todos.add(TodoItem(
+              title: _todoController.text,
+              isDone: false,
+              userDateTime: userDateTime,
+            ));
+            todos.sort((a, b) => a.userDateTime.compareTo(b.userDateTime));
+            _todoController.clear();
+          });
+        }
+      }
     }
   }
 
@@ -221,7 +250,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ],
                         ),
                         Text(
-                          'Time: ${_formatTime(todos[index].timestamp)}',
+                          'Time: ${_formatTime(todos[index].userDateTime)}',
                           style: TextStyle(
                             fontStyle: FontStyle.italic,
                             color: Colors.grey,
@@ -249,30 +278,30 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   String _formatTime(DateTime time) {
-    return '${time.hour}:${time.minute}';
+    return '${time.year}-${time.month}-${time.day} ${time.hour}:${time.minute}';
   }
 }
 
 class TodoItem {
   final String title;
   final bool isDone;
-  final DateTime timestamp;
+  final DateTime userDateTime; // User-specified time and date
 
   TodoItem({
     required this.title,
     required this.isDone,
-    required this.timestamp,
+    required this.userDateTime,
   });
 
   TodoItem copyWith({
     String? title,
     bool? isDone,
-    DateTime? timestamp,
+    DateTime? userDateTime,
   }) {
     return TodoItem(
       title: title ?? this.title,
       isDone: isDone ?? this.isDone,
-      timestamp: timestamp ?? this.timestamp,
+      userDateTime: userDateTime ?? this.userDateTime,
     );
   }
 }
